@@ -14,13 +14,18 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ChatType
-
+from fastapi import FastAPI
+import uvicorn
+app = FastAPI()
+@app.get("/kaithheathcheck")
+async def health():
+    return {"status": "ok"}
 
 # ======================
 # ⚙ НАСТРОЙКИ
 # ======================
 import os
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.environ.get("BOT_TOKEN")
 # 🔧 Впишите сюда ID админов
 ADMIN_ID = [1071264428, 7237228038, 5301082618]
 EVEN_WEEK_START = date(2026, 2, 9)
@@ -1629,6 +1634,11 @@ async def main():
     SUBJECT_MAP = init_subject_map()
     asyncio.create_task(notifier())
     asyncio.create_task(reset_changes())
+    # веб-сервер для healthcheck на 8080
+    config = uvicorn.Config(app, host="0.0.0.0", port=8080, log_level="info")
+    server = uvicorn.Server(config)
+    asyncio.create_task(server.serve())
+    # Telegram-бот
     await dp.start_polling(bot)
 
 
